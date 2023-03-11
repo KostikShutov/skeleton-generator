@@ -1,0 +1,13 @@
+version: '3'
+services:
+  python-generator:
+    build: .
+    image: python-generator
+    container_name: python-generator-container
+    tty: true
+    privileged: true
+    volumes:
+      - ".:/code"
+    working_dir: /code
+    environment:
+      PYTHONPATH: /code
