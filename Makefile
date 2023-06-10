@@ -34,6 +34,10 @@ train:
 tensorboard:
 	docker-compose run --rm -p 3002:6006 -w /code python-generator tensorboard --logdir logs/tensorboard --bind_all
 
+.PHONY: clear
+clear:
+	docker-compose run --rm -w /code python-generator rm -rf logs/*
+
 .PHONY: tests
 tests:
 	docker-compose run --rm -w /code python-generator python -m unittest discover . "*Test.py"

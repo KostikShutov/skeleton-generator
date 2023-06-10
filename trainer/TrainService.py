@@ -8,39 +8,39 @@ from keras.models import Sequential
 from keras.utils import plot_model
 from keras_visualizer import visualizer
 from common.commands.Command import Command
-from common.commands.CommandsService import CommandsService
+from common.commands.CommandsTransformer import CommandsTransformer
 from common.coordinates.Coordinate import Coordinate
 from common.coordinates.CoordinatesParser import CoordinatesParser
-from common.coordinates.CoordinatesService import CoordinatesService
+from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
 from predictor.PredictModel import PredictModel
 from trainer.CommandsCreator import CommandsCreator
 
 
 class TrainService:
     def __init__(self, coordinatesParser: CoordinatesParser,
-                 coordinatesService: CoordinatesService,
+                 coordinatesTransformer: CoordinatesTransformer,
                  commandsCreator: CommandsCreator,
-                 commandsService: CommandsService) -> None:
+                 commandsTransformer: CommandsTransformer) -> None:
         self.coordinatesParser = coordinatesParser
-        self.coordinatesService = coordinatesService
+        self.coordinatesTransformer = coordinatesTransformer
         self.commandsCreator = commandsCreator
-        self.commandsService = commandsService
+        self.commandsTransformer = commandsTransformer
 
     def train(self) -> None:
         with open('model/train.json', 'r') as file:
             data: Iterable = json.load(file)
 
         model: Sequential = PredictModel().getModel()
-        trainX: list[list[float]] = []
-        trainY: list[list[float, float]] = []
+        trainX: list[list[list[float, float]]] = []
+        trainY: list[list[list[int, float, float]]] = []
 
         for i, item in enumerate(data):
             course: list[Coordinate] = self.coordinatesParser.parse(item)
-            commands: list[tuple[list[Coordinate], Command]] = self.commandsCreator.create(course)
+            items: list[tuple[list[Coordinate], list[Command]]] = self.commandsCreator.create(course)
 
-            for part, command in commands:
-                flattenX: list[float] = self.coordinatesService.flattenWithRound(part)
-                flattenY: list[float, float] = self.commandsService.flattenWithRound(command)
+            for part, commands in items:
+                flattenX: list[list[float, float]] = self.coordinatesTransformer.flatten(part)
+                flattenY: list[list[int, float, float]] = self.commandsTransformer.flatten(commands)
 
                 logging.debug('Train input part: %s' % flattenX)
                 logging.debug('Train target part: %s' % flattenY)
@@ -48,7 +48,7 @@ class TrainService:
                 trainX.append(flattenX)
                 trainY.append(flattenY)
 
-        tensorboard_dir: str = 'logs/tensorboard/' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        tensorboard_dir: str = 'logs/tensorboard/' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_dir, histogram_freq=1)
 
         model.fit(x=trainX,

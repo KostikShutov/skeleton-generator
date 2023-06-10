@@ -52,6 +52,12 @@ make train
 make tensorboard
 ```
 
+Очистить папку с логами:
+
+```bash
+make clear
+```
+
 Запустить тесты:
 
 ```bash

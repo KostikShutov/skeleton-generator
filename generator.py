@@ -5,10 +5,9 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from common.coordinates.CoordinatesParser import CoordinatesParser
 from common.coordinates.CoordinatesLogger import CoordinatesLogger
-from common.coordinates.CoordinatesService import CoordinatesService
+from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
 from common.interpolation.CubicSplineService import CubicSplineService
 from common.interpolation.InterpolateService import InterpolateService
-from predictor.CommandsPredictor import CommandsPredictor
 from predictor.PredictService import PredictService
 
 Logger('generator')
@@ -18,28 +17,24 @@ cors = CORS(app)
 
 
 def getPredictService() -> PredictService:
-    coordinatesService = CoordinatesService()
+    coordinatesTransformer = CoordinatesTransformer()
 
     coordinatesLogger = CoordinatesLogger(
-        coordinatesService,
+        coordinatesTransformer,
         'generator',
     )
 
     cubicSplineService = CubicSplineService()
 
     interpolateService = InterpolateService(
-        coordinatesService,
+        coordinatesTransformer,
         cubicSplineService,
     )
 
-    commandsPredictor = CommandsPredictor(
-        coordinatesLogger,
-        coordinatesService,
-        interpolateService,
-    )
-
     return PredictService(
-        commandsPredictor,
+        coordinatesLogger,
+        coordinatesTransformer,
+        interpolateService,
     )
 
 

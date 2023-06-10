@@ -1,7 +1,7 @@
 from common.coordinates.Coordinate import Coordinate
 
 
-class CoordinatesService:
+class CoordinatesTransformer:
     def separateToFloatLists(self, coordinates: list[Coordinate]) -> tuple[list[float], list[float]]:
         coordinatesX: list[float] = []
         coordinatesY: list[float] = []
@@ -24,7 +24,7 @@ class CoordinatesService:
         parts: list[list[Coordinate]] = []
 
         for i in range(max(0, len(coordinates) - 2)):
-            part: list[Coordinate] = self.normalizeToZero(coordinates[i:i + 3])
+            part: list[Coordinate] = coordinates[i:i + 3]
             parts.append(part)
 
         return parts
@@ -38,18 +38,19 @@ class CoordinatesService:
 
         for coordinate in coordinates:
             normalized.append(Coordinate(
-                round(coordinate.x - first.x, 2),
-                round(coordinate.y - first.y, 2),
+                coordinate.x - first.x,
+                coordinate.y - first.y,
                 coordinate.angle,
             ))
 
+        normalized.pop(0)
+
         return normalized
 
-    def flattenWithRound(self, coordinates: list[Coordinate]) -> list[float]:
-        flattened: list[float] = []
+    def flatten(self, coordinates: list[Coordinate]) -> list[list[float, float]]:
+        flattened: list[list[float, float]] = []
 
         for coordinate in coordinates:
-            flattened.append(round(coordinate.x, 2))
-            flattened.append(round(coordinate.y, 2))
+            flattened.append([coordinate.x, coordinate.y])
 
         return flattened

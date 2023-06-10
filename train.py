@@ -1,16 +1,16 @@
 #!/usr/bin/python
 
 from utils.Logger import Logger
-from common.commands.CommandsService import CommandsService
+from common.commands.CommandsTransformer import CommandsTransformer
 from common.coordinates.CoordinatesParser import CoordinatesParser
-from common.coordinates.CoordinatesService import CoordinatesService
+from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
 from common.coordinates.CoordinatesLogger import CoordinatesLogger
 from common.interpolation.CubicSplineService import CubicSplineService
 from common.interpolation.InterpolateService import InterpolateService
 from trainer.CommandsCreator import CommandsCreator
 from trainer.TrainService import TrainService
-from trainer.StanleyHelper import StanleyHelper
-from trainer.StanleyController import StanleyController
+from trainer.PredictiveHelper import PredictiveHelper
+from trainer.PredictiveController import PredictiveController
 
 Logger('train')
 
@@ -18,40 +18,40 @@ Logger('train')
 def getTrainService() -> TrainService:
     coordinatesParser = CoordinatesParser()
 
-    coordinatesService = CoordinatesService()
+    coordinatesTransformer = CoordinatesTransformer()
 
     coordinatesLogger = CoordinatesLogger(
-        coordinatesService,
+        coordinatesTransformer,
         'train',
     )
 
     cubicSplineService = CubicSplineService()
 
     interpolateService = InterpolateService(
-        coordinatesService,
+        coordinatesTransformer,
         cubicSplineService,
     )
 
-    stanleyHelper = StanleyHelper()
+    predictiveHelper = PredictiveHelper()
 
-    stanleyController = StanleyController(
-        stanleyHelper,
+    predictiveController = PredictiveController(
+        predictiveHelper,
         interpolateService,
     )
 
     commandsCreator = CommandsCreator(
         coordinatesLogger,
-        coordinatesService,
-        stanleyController,
+        coordinatesTransformer,
+        predictiveController,
     )
 
-    commandsService = CommandsService()
+    commandsTransformer = CommandsTransformer()
 
     return TrainService(
         coordinatesParser,
-        coordinatesService,
+        coordinatesTransformer,
         commandsCreator,
-        commandsService,
+        commandsTransformer,
     )
 
 

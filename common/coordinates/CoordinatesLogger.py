@@ -2,21 +2,21 @@ import os
 import matplotlib.pyplot as plt
 from datetime import datetime
 from common.coordinates.Coordinate import Coordinate
-from common.coordinates.CoordinatesService import CoordinatesService
+from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
 
 
 class CoordinatesLogger:
-    def __init__(self, coordinatesService: CoordinatesService,
+    def __init__(self, coordinatesTransformer: CoordinatesTransformer,
                  directory: str) -> None:
-        self.coordinatesService = coordinatesService
+        self.coordinatesTransformer = coordinatesTransformer
         self.directory = 'logs/' + directory
 
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
     def log(self, coordinatesOld: list[Coordinate], coordinatesNew: list[Coordinate], chart: str) -> None:
-        coordinatesOldX, coordinatesOldY = self.coordinatesService.separateToFloatLists(coordinatesOld)
-        coordinatesNewX, coordinatesNewY = self.coordinatesService.separateToFloatLists(coordinatesNew)
+        coordinatesOldX, coordinatesOldY = self.coordinatesTransformer.separateToFloatLists(coordinatesOld)
+        coordinatesNewX, coordinatesNewY = self.coordinatesTransformer.separateToFloatLists(coordinatesNew)
 
         fig, ax = plt.subplots()
         ax.grid(axis='both')
@@ -27,6 +27,6 @@ class CoordinatesLogger:
         fig.savefig(self.__getPath(chart))
 
     def __getPath(self, chart: str) -> str:
-        time: str = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        time: str = datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')
 
         return self.directory + '/' + time + '_' + chart + '.png'
