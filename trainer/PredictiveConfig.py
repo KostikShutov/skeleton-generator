@@ -11,9 +11,6 @@ class PredictiveConfig:
     Rd = np.diag([0.01, 1.0])  # Input difference cost matrix
     Q = np.diag([1.0, 1.0, 0.5, 0.5])  # State cost matrix
     Qf = Q  # State final matrix
-    GOAL_DIS = 1.5  # Goal distance
-    STOP_SPEED = 0.5 / 3.6  # Stop speed
-    MAX_TIME = 500.0  # Max simulation time
 
     # Iterative parameters
     MAX_ITER = 3  # Max iteration

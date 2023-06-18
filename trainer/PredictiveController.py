@@ -18,7 +18,6 @@ class PredictiveController:
         cx, cy, cyaw = self.interpolateService.interpolateBySplines(courseNew)
         sp = self.predictiveHelper.calc_speed_profile(cx, cy, cyaw, PredictiveConfig.TARGET_SPEED)
         state = PredictiveState(x=cx[0], y=cy[0], yaw=cyaw[0], v=0.0)
-        goal = [cx[-1], cy[-1]]
 
         if state.yaw - cyaw[0] >= math.pi:
             state.yaw -= math.pi * 2.0
@@ -31,14 +30,14 @@ class PredictiveController:
         yaw = [state.yaw]
         v = [state.v]
         t = [0.0]
-        d = [0.0]
+        s = [0.0]
         a = [0.0]
         target_ind, _ = self.predictiveHelper.calc_nearest_index(state, cx, cy, cyaw, 0)
         odelta, oa = None, None
         cyaw = self.predictiveHelper.smooth_yaw(cyaw)
         path: list[Coordinate] = []
 
-        while PredictiveConfig.MAX_TIME >= time:
+        for i in range(min(len(cx), len(cy), len(cyaw))):
             xref, target_ind, dref = self.predictiveHelper.calc_ref_trajectory(
                 state=state,
                 cx=cx,
@@ -60,11 +59,11 @@ class PredictiveController:
                 od=odelta,
             )
 
-            di, ai = 0.0, 0.0
+            acceleration, steering = 0.0, 0.0
 
             if odelta is not None:
-                di, ai = odelta[0], oa[0]
-                state.update(ai, di)
+                acceleration, steering = oa[0], odelta[0],
+                state.update(acceleration, steering, i, cx, cy)
 
             time = time + PredictiveConfig.DT
             x.append(state.x)
@@ -72,12 +71,8 @@ class PredictiveController:
             yaw.append(state.yaw)
             v.append(state.v)
             t.append(time)
-            d.append(di)
-            a.append(ai)
-            path.append(Coordinate(state.x, state.y, float(np.degrees(di))))
-
-            if self.predictiveHelper.check_goal(state, goal, target_ind, len(cx)):
-                print('Goal')
-                break
+            a.append(acceleration)
+            s.append(steering)
+            path.append(Coordinate(state.x, state.y, float(np.degrees(-steering))))
 
         return path

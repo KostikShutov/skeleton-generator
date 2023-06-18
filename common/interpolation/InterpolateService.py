@@ -5,7 +5,7 @@ from common.interpolation.CubicSplineService import CubicSplineService
 
 
 class InterpolateService:
-    DS: float = 2.0
+    DS: float = 4.0
 
     def __init__(self, coordinatesTransformer: CoordinatesTransformer,
                  cubicSplineService: CubicSplineService) -> None:
@@ -15,7 +15,7 @@ class InterpolateService:
     def interpolateByLinear(self, coordinates: list[Coordinate]) -> list[Coordinate]:
         coordinatesX, coordinatesY = self.coordinatesTransformer.separateToFloatLists(coordinates)
 
-        coordinatesNewX = np.linspace(coordinatesX[0], coordinatesX[-1], len(coordinatesX))
+        coordinatesNewX = np.arange(coordinatesX[0], coordinatesX[-1], self.DS)
         coordinatesNewY = np.interp(coordinatesNewX, coordinatesX, coordinatesY)
 
         return self.coordinatesTransformer.combineFromFloatLists(coordinatesNewX, coordinatesNewY)

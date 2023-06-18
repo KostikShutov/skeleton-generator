@@ -14,3 +14,13 @@ class Command:
 
     def __repr__(self) -> str:
         return '(' + str(self.type) + ', ' + str(self.angle) + ', ' + str(self.distance) + ')'
+
+    def __str__(self) -> str:
+        value: str = ''
+
+        if self.type == self.MOVE:
+            value = 'MOVE, ' + str(self.distance)
+        elif self.type == self.TURN:
+            value = 'TURN, ' + str(self.angle)
+
+        return '(' + value + ')'

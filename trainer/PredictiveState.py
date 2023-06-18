@@ -9,16 +9,21 @@ class PredictiveState:
         self.yaw = yaw
         self.v = v
 
-    def update(self, a, delta):
-        if delta >= PredictiveConfig.MAX_STEER:
-            delta = PredictiveConfig.MAX_STEER
-        elif delta <= -PredictiveConfig.MAX_STEER:
-            delta = -PredictiveConfig.MAX_STEER
+    def update(self, acceleration, steering, i=None, cx=None, cy=None):
+        if steering >= PredictiveConfig.MAX_STEER:
+            steering = PredictiveConfig.MAX_STEER
+        elif steering <= -PredictiveConfig.MAX_STEER:
+            steering = -PredictiveConfig.MAX_STEER
 
-        self.x = self.x + self.v * math.cos(self.yaw) * PredictiveConfig.DT
-        self.y = self.y + self.v * math.sin(self.yaw) * PredictiveConfig.DT
-        self.yaw = self.yaw + self.v / PredictiveConfig.WB * math.tan(delta) * PredictiveConfig.DT
-        self.v = self.v + a * PredictiveConfig.DT
+        if i is None:
+            self.x = self.x + self.v * math.cos(self.yaw) * PredictiveConfig.DT
+            self.y = self.y + self.v * math.sin(self.yaw) * PredictiveConfig.DT
+        else:
+            self.x = cx[i]
+            self.y = cy[i]
+
+        self.yaw = self.yaw + self.v / PredictiveConfig.WB * math.tan(steering) * PredictiveConfig.DT
+        self.v = self.v + acceleration * PredictiveConfig.DT
 
         if self.v > PredictiveConfig.MAX_SPEED:
             self.v = PredictiveConfig.MAX_SPEED

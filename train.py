@@ -7,7 +7,6 @@ from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
 from common.coordinates.CoordinatesLogger import CoordinatesLogger
 from common.interpolation.CubicSplineService import CubicSplineService
 from common.interpolation.InterpolateService import InterpolateService
-from trainer.CommandsCreator import CommandsCreator
 from trainer.TrainService import TrainService
 from trainer.PredictiveHelper import PredictiveHelper
 from trainer.PredictiveController import PredictiveController
@@ -39,19 +38,14 @@ def getTrainService() -> TrainService:
         interpolateService,
     )
 
-    commandsCreator = CommandsCreator(
-        coordinatesLogger,
-        coordinatesTransformer,
-        predictiveController,
-    )
-
     commandsTransformer = CommandsTransformer()
 
     return TrainService(
         coordinatesParser,
         coordinatesTransformer,
-        commandsCreator,
+        coordinatesLogger,
         commandsTransformer,
+        predictiveController,
     )
 
 

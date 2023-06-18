@@ -89,8 +89,6 @@ class PredictiveHelper:
 
             if du <= PredictiveConfig.DU_TH:
                 break
-        else:
-            print('Iterative is max iter')
 
         return oa, od, ox, oy, oyaw, ov
 
@@ -174,22 +172,6 @@ class PredictiveHelper:
                 dref[0, i] = 0.0
 
         return xref, ind, dref
-
-    def check_goal(self, state, goal, tind, nind):
-        dx = state.x - goal[0]
-        dy = state.y - goal[1]
-        d = math.hypot(dx, dy)
-        isgoal = (d <= PredictiveConfig.GOAL_DIS)
-
-        if abs(tind - nind) >= 5:
-            isgoal = False
-
-        isstop = (abs(state.v) <= PredictiveConfig.STOP_SPEED)
-
-        if isgoal and isstop:
-            return True
-
-        return False
 
     def calc_speed_profile(self, cx, cy, cyaw, target_speed):
         speed_profile = [target_speed] * len(cx)

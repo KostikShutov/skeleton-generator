@@ -17,19 +17,19 @@ class PredictService:
         self.coordinatesTransformer = coordinatesTransformer
         self.interpolateService = interpolateService
 
-    def predict(self, coordinates: list[Coordinate]) -> list[list[object]]:
+    def predict(self, coordinates: list[Coordinate]) -> list[object]:
         coordinates: list[Coordinate] = self.__prepareCoordinates(coordinates)
         parts: list[list[Coordinate]] = self.__createParts(coordinates)
-        result: list[list[object]] = []
+        result: list[object] = []
 
         for part in parts:
             flattenX: list[list[float, float]] = self.coordinatesTransformer.flatten(part)
-            flattenY: list[object] = self.__doPredict(flattenX)
+            commands: list[object] = self.__doPredict(flattenX)
 
-            logging.debug('Predict x part: %s' % flattenX)
-            logging.debug('Predict y part: %s' % flattenY)
+            logging.debug('Predict x: %s' % [str(c) for c in part])
+            logging.debug('     to y: %s' % [str(c) for c in commands])
 
-            result += flattenY
+            result += commands
 
         return result
 
@@ -38,7 +38,8 @@ class PredictService:
         coordinatesNewX, coordinatesNewY, _ = self.interpolateService.interpolateBySplines(coordinatesNew)
         coordinatesNew = self.coordinatesTransformer.combineFromFloatLists(coordinatesNewX, coordinatesNewY)
 
-        self.coordinatesLogger.log(coordinatesOld, coordinatesNew, 'interpolation')
+        name: str = self.coordinatesLogger.generateName('interpolation')
+        self.coordinatesLogger.logAsPlot(coordinatesOld, coordinatesNew, name)
 
         return coordinatesNew
 
@@ -48,8 +49,8 @@ class PredictService:
         return [self.coordinatesTransformer.normalizeToZero(part) for part in parts]
 
     def __doPredict(self, flattenX: list[list[float]]) -> list[object]:
-        prediction: any = self.__loadModel().predict(tf.expand_dims(flattenX, axis=0))[0]
-        commands: list[list[float, float, float]] = prediction.tolist()
+        prediction: any = self.__loadModel().predict(tf.expand_dims(flattenX, axis=0))
+        commands: list[list[float, float, float]] = prediction[0].tolist()
         result: list[object] = []
 
         for command in commands:
