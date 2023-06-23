@@ -2,29 +2,42 @@ from common.coordinates.Coordinate import Coordinate
 
 
 class CoordinatesTransformer:
-    def separateToFloatLists(self, coordinates: list[Coordinate]) -> tuple[list[float], list[float]]:
-        coordinatesX: list[float] = []
-        coordinatesY: list[float] = []
+    PARTS: int = 3
+
+    def separateToFloatLists(self, coordinates: list[Coordinate]) -> tuple[list[float], list[float], list[float]]:
+        x: list[float] = []
+        y: list[float] = []
+        angles: list[float] = []
 
         for coordinate in coordinates:
-            coordinatesX.append(coordinate.x)
-            coordinatesY.append(coordinate.y)
+            x.append(coordinate.x)
+            y.append(coordinate.y)
+            angles.append(coordinate.angle)
 
-        return coordinatesX, coordinatesY
+        return x, y, angles
 
-    def combineFromFloatLists(self, coordinatesX: list[float], coordinatesY: list[float]) -> list[Coordinate]:
+    def combineFromFloatLists(self, x: list[float], y: list[float], angles: list[float] = None) -> list[Coordinate]:
         coordinates: list[Coordinate] = []
+        length: int = min(len(x), len(y))
 
-        for i in range(min(len(coordinatesX), len(coordinatesY))):
-            coordinates.append(Coordinate(coordinatesX[i], coordinatesY[i]))
+        if angles is not None:
+            length = min(length, len(angles))
+
+        for i in range(length):
+            if angles is None:
+                coordinate: Coordinate = Coordinate(x[i], y[i])
+            else:
+                coordinate: Coordinate = Coordinate(x[i], y[i], angles[i])
+
+            coordinates.append(coordinate)
 
         return coordinates
 
     def splitToParts(self, coordinates: list[Coordinate]) -> list[list[Coordinate]]:
         parts: list[list[Coordinate]] = []
 
-        for i in range(max(0, len(coordinates) - 2)):
-            part: list[Coordinate] = coordinates[i:i + 3]
+        for i in range(max(0, len(coordinates) - (self.PARTS - 1))):
+            part: list[Coordinate] = coordinates[i:i + self.PARTS]
             parts.append(part)
 
         return parts

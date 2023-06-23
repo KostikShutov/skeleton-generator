@@ -9,17 +9,43 @@ class CoordinatesTransformerTest(unittest.TestCase):
 
     def test_separateToFloatLists(self) -> None:
         actual = self.coordinatesTransformer.separateToFloatLists([])
-        self.assertEqual(([], []), actual)
+        self.assertEqual(([], [], []), actual)
 
-        actual = self.coordinatesTransformer.separateToFloatLists([Coordinate(1.2, 3.4), Coordinate(5.6, 7.8)])
-        self.assertEqual(([1.2, 5.6], [3.4, 7.8]), actual)
+        actual = self.coordinatesTransformer.separateToFloatLists([
+            Coordinate(1.2, 3.4, 5.6),
+            Coordinate(7.8, 9.10, 11.12),
+        ])
+        self.assertEqual((
+            [1.2, 7.8],
+            [3.4, 9.10],
+            [5.6, 11.12],
+        ), actual)
 
     def test_combineFromFloatLists(self) -> None:
         actual = self.coordinatesTransformer.combineFromFloatLists([], [])
         self.assertEqual([], actual)
 
-        actual = self.coordinatesTransformer.combineFromFloatLists([1.2, 5.6], [3.4, 7.8])
-        self.assertEqual(([Coordinate(1.2, 3.4), Coordinate(5.6, 7.8)]), actual)
+        actual = self.coordinatesTransformer.combineFromFloatLists([], [], [])
+        self.assertEqual([], actual)
+
+        actual = self.coordinatesTransformer.combineFromFloatLists(
+            [1.2, 5.6],
+            [3.4, 7.8],
+        )
+        self.assertEqual(([
+            Coordinate(1.2, 3.4),
+            Coordinate(5.6, 7.8),
+        ]), actual)
+
+        actual = self.coordinatesTransformer.combineFromFloatLists(
+            [1.2, 7.8],
+            [3.4, 9.10],
+            [5.6, 11.12]
+        )
+        self.assertEqual(([
+            Coordinate(1.2, 3.4, 5.6),
+            Coordinate(7.8, 9.10, 11.12),
+        ]), actual)
 
     def test_splitToParts(self) -> None:
         actual = self.coordinatesTransformer.splitToParts([])

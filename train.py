@@ -34,8 +34,8 @@ def getTrainService() -> TrainService:
     predictiveHelper = PredictiveHelper()
 
     predictiveController = PredictiveController(
+        coordinatesTransformer,
         predictiveHelper,
-        interpolateService,
     )
 
     commandsTransformer = CommandsTransformer()
@@ -45,6 +45,7 @@ def getTrainService() -> TrainService:
         coordinatesTransformer,
         coordinatesLogger,
         commandsTransformer,
+        interpolateService,
         predictiveController,
     )
 

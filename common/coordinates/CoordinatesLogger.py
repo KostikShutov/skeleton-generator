@@ -22,13 +22,13 @@ class CoordinatesLogger:
         return time + '_' + key
 
     def logAsPlot(self, coordinatesOld: list[Coordinate], coordinatesNew: list[Coordinate], name: str) -> None:
-        coordinatesOldX, coordinatesOldY = self.coordinatesTransformer.separateToFloatLists(coordinatesOld)
-        coordinatesNewX, coordinatesNewY = self.coordinatesTransformer.separateToFloatLists(coordinatesNew)
+        oldX, oldY, _ = self.coordinatesTransformer.separateToFloatLists(coordinatesOld)
+        newX, newY, _ = self.coordinatesTransformer.separateToFloatLists(coordinatesNew)
 
         fig, ax = plt.subplots()
         ax.grid(axis='both')
-        ax.plot(coordinatesOldX, coordinatesOldY, label='Source', linewidth=4.0, c='red')
-        ax.plot(coordinatesNewX, coordinatesNewY, label='Destination', linewidth=4.0, c='green')
+        ax.plot(oldX, oldY, label='Source', linewidth=4.0, c='red')
+        ax.plot(newX, newY, label='Destination', linewidth=4.0, c='green')
         ax.legend()
         fig.gca().set_aspect('equal', adjustable='box')
         fig.savefig(self.__getPath(name))

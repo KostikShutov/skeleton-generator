@@ -18,9 +18,9 @@ class PredictService:
         self.interpolateService = interpolateService
 
     def predict(self, coordinates: list[Coordinate]) -> list[object]:
+        result: list[object] = []
         coordinates: list[Coordinate] = self.__prepareCoordinates(coordinates)
         parts: list[list[Coordinate]] = self.__createParts(coordinates)
-        result: list[object] = []
 
         for part in parts:
             flattenX: list[list[float, float]] = self.coordinatesTransformer.flatten(part)
@@ -35,11 +35,13 @@ class PredictService:
 
     def __prepareCoordinates(self, coordinatesOld: list[Coordinate]) -> list[Coordinate]:
         coordinatesNew: list[Coordinate] = self.interpolateService.interpolateByLinear(coordinatesOld)
-        coordinatesNewX, coordinatesNewY, _ = self.interpolateService.interpolateBySplines(coordinatesNew)
-        coordinatesNew = self.coordinatesTransformer.combineFromFloatLists(coordinatesNewX, coordinatesNewY)
+        coordinatesNew: list[Coordinate] = self.interpolateService.interpolateBySplines(coordinatesNew)
 
-        name: str = self.coordinatesLogger.generateName('interpolation')
-        self.coordinatesLogger.logAsPlot(coordinatesOld, coordinatesNew, name)
+        self.coordinatesLogger.logAsPlot(
+            coordinatesOld=coordinatesOld,
+            coordinatesNew=coordinatesNew,
+            name=self.coordinatesLogger.generateName('interpolation'),
+        )
 
         return coordinatesNew
 
@@ -49,9 +51,9 @@ class PredictService:
         return [self.coordinatesTransformer.normalizeToZero(part) for part in parts]
 
     def __doPredict(self, flattenX: list[list[float]]) -> list[object]:
+        result: list[object] = []
         prediction: any = self.__loadModel().predict(tf.expand_dims(flattenX, axis=0))
         commands: list[list[float, float, float]] = prediction[0].tolist()
-        result: list[object] = []
 
         for command in commands:
             command = Command(

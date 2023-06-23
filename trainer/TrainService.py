@@ -14,6 +14,7 @@ from common.coordinates.Coordinate import Coordinate
 from common.coordinates.CoordinatesLogger import CoordinatesLogger
 from common.coordinates.CoordinatesParser import CoordinatesParser
 from common.coordinates.CoordinatesTransformer import CoordinatesTransformer
+from common.interpolation.InterpolateService import InterpolateService
 from predictor.PredictModel import PredictModel
 from trainer.PredictiveController import PredictiveController
 from utils.Logger import Logger
@@ -24,11 +25,13 @@ class TrainService:
                  coordinatesTransformer: CoordinatesTransformer,
                  coordinatesLogger: CoordinatesLogger,
                  commandsTransformer: CommandsTransformer,
+                 interpolateService: InterpolateService,
                  predictiveController: PredictiveController) -> None:
         self.coordinatesParser = coordinatesParser
         self.coordinatesTransformer = coordinatesTransformer
         self.coordinatesLogger = coordinatesLogger
         self.commandsTransformer = commandsTransformer
+        self.interpolateService = interpolateService
         self.predictiveController = predictiveController
 
     def train(self) -> None:
@@ -54,7 +57,7 @@ class TrainService:
                 trainY.append(flattenY)
 
         tensorboard_dir: str = Logger.DIR + '/tensorboard/' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_dir, histogram_freq=1)
+        tensorboard_callback: any = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_dir, histogram_freq=1)
 
         model.fit(x=trainX,
                   y=trainY,
@@ -65,16 +68,20 @@ class TrainService:
         self.__saveModel(model)
 
     def __createItems(self, course: list[Coordinate]) -> list[tuple[list[Coordinate], list[Command]]]:
-        trajectory: list[Coordinate] = self.predictiveController.calculateTrajectory(course)
-
-        name: str = self.coordinatesLogger.generateName('simulation')
-        self.coordinatesLogger.logAsPlot(course, trajectory, name)
-        self.coordinatesLogger.logAsText(trajectory, 'Trajectory', name)
-
         result: list[tuple[list[Coordinate], list[Command]]] = []
-        parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(trajectory)
+        course: list[Coordinate] = self.interpolateService.interpolateByLinear(course)
+        course: list[Coordinate] = self.interpolateService.interpolateBySplines(course)
+        parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(course)
 
         for part in parts:
+            part: list[Coordinate] = self.predictiveController.calculateTrajectory(part)
+
+            self.coordinatesLogger.logAsText(
+                coordinates=part,
+                title='Trajectory',
+                name=self.coordinatesLogger.generateName('simulation'),
+            )
+
             result.append(self.__createItem(part))
 
         return result
@@ -85,12 +92,12 @@ class TrainService:
             Command(Command.MOVE, distance=self.__calculateDistance(part)),
         ]
 
-        part = self.coordinatesTransformer.normalizeToZero(part)
+        part: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
 
         return part, commands
 
     def __calculateAngle(self, part: list[Coordinate]) -> float:
-        return part[0].angle
+        return part[2].angle
 
     def __calculateDistance(self, part: list[Coordinate]) -> float:
         distance: float = 0.0

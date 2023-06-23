@@ -15,7 +15,10 @@ class CommandsTransformerTest(unittest.TestCase):
             Command(Command.MOVE, 1.2, 3.4),
             Command(Command.TURN, 5.6, 7.8),
         ])
-        self.assertEqual([[1, 1.2, 3.4], [2, 5.6, 7.8]], actual)
+        self.assertEqual([
+            [1, 1.2, 3.4],
+            [2, 5.6, 7.8],
+        ], actual)
 
 
 if __name__ == '__main__':

@@ -13,16 +13,15 @@ class InterpolateService:
         self.cubicSplineService = cubicSplineService
 
     def interpolateByLinear(self, coordinates: list[Coordinate]) -> list[Coordinate]:
-        coordinatesX, coordinatesY = self.coordinatesTransformer.separateToFloatLists(coordinates)
+        oldX, oldY, _ = self.coordinatesTransformer.separateToFloatLists(coordinates)
 
-        coordinatesNewX = np.arange(coordinatesX[0], coordinatesX[-1], self.DS)
-        coordinatesNewY = np.interp(coordinatesNewX, coordinatesX, coordinatesY)
+        newX = np.arange(oldX[0], oldX[-1], self.DS)
+        newY = np.interp(newX, oldX, oldY)
 
-        return self.coordinatesTransformer.combineFromFloatLists(coordinatesNewX, coordinatesNewY)
+        return self.coordinatesTransformer.combineFromFloatLists(newX, newY)
 
-    def interpolateBySplines(self, coordinates: list[Coordinate]) -> tuple[list[float], list[float], list[float]]:
-        coordinatesX, coordinatesY = self.coordinatesTransformer.separateToFloatLists(coordinates)
+    def interpolateBySplines(self, coordinates: list[Coordinate]) -> list[Coordinate]:
+        x, y, _ = self.coordinatesTransformer.separateToFloatLists(coordinates)
+        x, y, yaw, _, _ = self.cubicSplineService.calcSplineCourse(x, y, ds=self.DS)
 
-        x, y, yaw, _, _ = self.cubicSplineService.calcSplineCourse(coordinatesX, coordinatesY, ds=self.DS)
-
-        return x, y, yaw
+        return self.coordinatesTransformer.combineFromFloatLists(x, y, yaw)
