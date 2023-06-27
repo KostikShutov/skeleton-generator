@@ -16,25 +16,30 @@ class CoordinatesLogger:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
-    def generateName(self, key: str) -> str:
+    def log(self, coordinates: list[Coordinate], key: str) -> None:
+        name: str = self.__generateName(key)
+
+        self.__logAsPlot(coordinates, name)
+        self.__logAsText(coordinates, name)
+
+    def __generateName(self, key: str) -> str:
         time: str = datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')
 
         return time + '_' + key
 
-    def logAsPlot(self, coordinatesOld: list[Coordinate], coordinatesNew: list[Coordinate], name: str) -> None:
-        oldX, oldY, _ = self.coordinatesTransformer.separateToFloatLists(coordinatesOld)
-        newX, newY, _ = self.coordinatesTransformer.separateToFloatLists(coordinatesNew)
+    def __logAsPlot(self, coordinates: list[Coordinate], name: str) -> None:
+        x, y, _ = self.coordinatesTransformer.separateToFloatLists(coordinates)
 
         fig, ax = plt.subplots()
         ax.grid(axis='both')
-        ax.plot(oldX, oldY, label='Source', linewidth=4.0, c='red')
-        ax.plot(newX, newY, label='Destination', linewidth=4.0, c='green')
+        ax.plot(x, y, label='xy', linewidth=4.0, c='tan', marker='o')
         ax.legend()
         fig.gca().set_aspect('equal', adjustable='box')
         fig.savefig(self.__getPath(name))
+        plt.close(fig)
 
-    def logAsText(self, coordinates: list[Coordinate], title: str, name: str) -> None:
-        logging.debug('%s "%s":' % (title, name))
+    def __logAsText(self, coordinates: list[Coordinate], name: str) -> None:
+        logging.debug('Plot "%s":' % name)
 
         for coordinate in coordinates:
             logging.debug('    x: %s, y: %s, angle: %s' % (coordinate.x, coordinate.y, coordinate.angle))

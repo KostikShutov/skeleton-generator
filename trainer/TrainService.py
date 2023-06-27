@@ -69,17 +69,20 @@ class TrainService:
 
     def __createItems(self, course: list[Coordinate]) -> list[tuple[list[Coordinate], list[Command]]]:
         result: list[tuple[list[Coordinate], list[Command]]] = []
-        course: list[Coordinate] = self.interpolateService.interpolateByLinear(course)
-        course: list[Coordinate] = self.interpolateService.interpolateBySplines(course)
+        course: list[Coordinate] = self.interpolateService.interpolate(course)
         parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(course)
+
+        self.coordinatesLogger.log(
+            coordinates=course,
+            key='course',
+        )
 
         for part in parts:
             part: list[Coordinate] = self.predictiveController.calculateTrajectory(part)
 
-            self.coordinatesLogger.logAsText(
+            self.coordinatesLogger.log(
                 coordinates=part,
-                title='Trajectory',
-                name=self.coordinatesLogger.generateName('simulation'),
+                key='part',
             )
 
             result.append(self.__createItem(part))
@@ -93,6 +96,11 @@ class TrainService:
         ]
 
         part: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
+
+        self.coordinatesLogger.log(
+            coordinates=part,
+            key='normalized',
+        )
 
         return part, commands
 

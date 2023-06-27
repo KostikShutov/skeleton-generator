@@ -17,10 +17,10 @@ class PredictService:
         self.coordinatesTransformer = coordinatesTransformer
         self.interpolateService = interpolateService
 
-    def predict(self, coordinates: list[Coordinate]) -> list[object]:
+    def predict(self, course: list[Coordinate]) -> list[object]:
         result: list[object] = []
-        coordinates: list[Coordinate] = self.__prepareCoordinates(coordinates)
-        parts: list[list[Coordinate]] = self.__createParts(coordinates)
+        course: list[Coordinate] = self.__prepareCoordinates(course)
+        parts: list[list[Coordinate]] = self.__createParts(course)
 
         for part in parts:
             flattenX: list[list[float, float]] = self.coordinatesTransformer.flatten(part)
@@ -33,22 +33,36 @@ class PredictService:
 
         return result
 
-    def __prepareCoordinates(self, coordinatesOld: list[Coordinate]) -> list[Coordinate]:
-        coordinatesNew: list[Coordinate] = self.interpolateService.interpolateByLinear(coordinatesOld)
-        coordinatesNew: list[Coordinate] = self.interpolateService.interpolateBySplines(coordinatesNew)
+    def __prepareCoordinates(self, course: list[Coordinate]) -> list[Coordinate]:
+        course: list[Coordinate] = self.interpolateService.interpolate(course)
 
-        self.coordinatesLogger.logAsPlot(
-            coordinatesOld=coordinatesOld,
-            coordinatesNew=coordinatesNew,
-            name=self.coordinatesLogger.generateName('interpolation'),
+        self.coordinatesLogger.log(
+            coordinates=course,
+            key='course',
         )
 
-        return coordinatesNew
+        return course
 
     def __createParts(self, coordinates: list[Coordinate]) -> list[list[Coordinate]]:
+        result: list[list[Coordinate]] = []
         parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(coordinates)
 
-        return [self.coordinatesTransformer.normalizeToZero(part) for part in parts]
+        for part in parts:
+            self.coordinatesLogger.log(
+                coordinates=part,
+                key='part',
+            )
+
+            normalized: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
+
+            self.coordinatesLogger.log(
+                coordinates=normalized,
+                key='normalized',
+            )
+
+            result.append(normalized)
+
+        return result
 
     def __doPredict(self, flattenX: list[list[float]]) -> list[object]:
         result: list[object] = []
