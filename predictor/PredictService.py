@@ -19,7 +19,6 @@ class PredictService:
 
     def predict(self, course: list[Coordinate]) -> list[object]:
         result: list[object] = []
-        course: list[Coordinate] = self.__prepareCoordinates(course)
         parts: list[list[Coordinate]] = self.__createParts(course)
 
         for part in parts:
@@ -33,31 +32,29 @@ class PredictService:
 
         return result
 
-    def __prepareCoordinates(self, course: list[Coordinate]) -> list[Coordinate]:
-        course: list[Coordinate] = self.interpolateService.interpolate(course)
-
-        self.coordinatesLogger.log(
-            coordinates=course,
-            key='course',
-        )
-
-        return course
-
-    def __createParts(self, coordinates: list[Coordinate]) -> list[list[Coordinate]]:
+    def __createParts(self, course: list[Coordinate]) -> list[list[Coordinate]]:
         result: list[list[Coordinate]] = []
-        parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(coordinates)
+        course: list[Coordinate] = self.interpolateService.interpolate(course)
+        parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(course)
+
+        additional: str = self.coordinatesLogger.log(
+            coordinates=course,
+            tag='course',
+        )
 
         for part in parts:
             self.coordinatesLogger.log(
                 coordinates=part,
-                key='part',
+                tag='part',
+                additional=additional,
             )
 
             normalized: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
 
             self.coordinatesLogger.log(
                 coordinates=normalized,
-                key='normalized',
+                tag='normalized',
+                additional=additional,
             )
 
             result.append(normalized)

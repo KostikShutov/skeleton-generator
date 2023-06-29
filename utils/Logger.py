@@ -1,14 +1,13 @@
-import os
 import sys
 import logging
+from utils.Utils import createDirectory
 
 
 class Logger:
     DIR: str = 'logs'
 
     def __init__(self, name: str) -> None:
-        if not os.path.exists(self.DIR):
-            os.makedirs(self.DIR)
+        createDirectory(self.DIR)
 
         formatter = logging.Formatter(fmt='[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 

@@ -73,9 +73,9 @@ class TrainService:
         course: list[Coordinate] = self.interpolateService.interpolate(course)
         parts: list[list[Coordinate]] = self.coordinatesTransformer.splitToParts(course)
 
-        self.coordinatesLogger.log(
+        additional: str = self.coordinatesLogger.log(
             coordinates=course,
-            key='course',
+            tag='course',
         )
 
         for part in parts:
@@ -83,27 +83,26 @@ class TrainService:
 
             self.coordinatesLogger.log(
                 coordinates=part,
-                key='part',
+                tag='part',
+                additional=additional,
             )
 
-            result.append(self.__createItem(part))
+            commands: list[Command] = [
+                Command(Command.TURN, angle=self.__calculateAngle(part)),
+                Command(Command.MOVE, distance=self.__calculateDistance(part)),
+            ]
+
+            normalized: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
+
+            self.coordinatesLogger.log(
+                coordinates=normalized,
+                tag='normalized',
+                additional=additional,
+            )
+
+            result.append((normalized, commands))
 
         return result
-
-    def __createItem(self, part: list[Coordinate]) -> tuple[list[Coordinate], list[Command]]:
-        commands: list[Command] = [
-            Command(Command.TURN, angle=self.__calculateAngle(part)),
-            Command(Command.MOVE, distance=self.__calculateDistance(part)),
-        ]
-
-        part: list[Coordinate] = self.coordinatesTransformer.normalizeToZero(part)
-
-        self.coordinatesLogger.log(
-            coordinates=part,
-            key='normalized',
-        )
-
-        return part, commands
 
     def __calculateAngle(self, part: list[Coordinate]) -> float:
         return part[2].angle
