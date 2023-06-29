@@ -2,6 +2,7 @@ import os
 import math
 import json
 import logging
+import visualkeras
 import tensorflow as tf
 from datetime import datetime
 from collections.abc import Iterable
@@ -127,3 +128,4 @@ class TrainService:
         plot_model(model, to_file='model/model.png', show_shapes=True, show_layer_names=False)
         visualizer(model, file_name='model/graph', file_format='png')
         os.remove('model/graph')
+        visualkeras.layered_view(model, legend=True, to_file='model/view.png')
